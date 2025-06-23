@@ -74,8 +74,14 @@
             margin-left: 10px;
             cursor: pointer;
         }
+
+        .scanner-icon {
+            margin-left: 10px;
+            cursor: pointer;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.0.8/minified/html5-qrcode.min.js"></script>
 </head>
 
 <body>
@@ -92,21 +98,19 @@
     <h2>📋 Establishment Upload Form</h2>
     <form id="fboForm">
         <label>🏢 Establishment Name:</label><br>
-        <input type="text" name="establishmentName" id="establishmentName" required><span
-            class="camera-icon">📷</span><br><br>
+        <input type="text" name="establishmentName" id="establishmentName" required><br><br>
 
         <label>🏠 Address:</label><br>
-        <textarea name="address" id="address" rows="3" required></textarea><span class="camera-icon">📷</span><br><br>
+        <textarea name="address" id="address" rows="3" required></textarea><br><br>
 
         <label>👤 FBO Name:</label><br>
-        <input type="text" name="fboName" id="fboName" required><span class="camera-icon">📷</span><br><br>
+        <input type="text" name="fboName" id="fboName" required><br><br>
 
         <label>📞 Contact Number:</label><br>
-        <input type="tel" name="contactNumber" id="contactNumber" required><span class="camera-icon">📷</span><br><br>
+        <input type="tel" name="contactNumber" id="contactNumber" required><br><br>
 
         <label>🧪 Sample Details:</label><br>
-        <textarea name="sampleDetails" id="sampleDetails" rows="3" required></textarea><span
-            class="camera-icon">📷</span><br><br>
+        <textarea name="sampleDetails" id="sampleDetails" rows="3" required></textarea><br><br>
 
         <label>📸 Photos:</label><br>
         <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" />
@@ -122,6 +126,10 @@
 
         <label>📍 Google Map Link:</label><br>
         <input type="text" id="mapLink" class="readonly" readonly><br><br>
+
+        <label>🔍 QR/Barcode Data:</label><br>
+        <input type="text" name="qrBarcodeData" id="qrBarcodeData" required><button type="button"
+            id="scanQrBarcodeBtn">📠 Scan</button><br><br>
 
         <button type="submit">📤 Submit</button>
     </form>
@@ -185,7 +193,7 @@
                         reader.onload = function (e) {
                             Tesseract.recognize(
                                 e.target.result,
-                                'eng',
+                                'eng+hin+tel+tam+kan+mal+ben+guj+ori+pan+mar', // English + major Indian languages
                                 {
                                     logger: info => console.log(info)
                                 }
@@ -209,6 +217,21 @@
         addCameraIcon('fboName');
         addCameraIcon('contactNumber');
         addCameraIcon('sampleDetails');
+
+        document.getElementById('scanQrBarcodeBtn').addEventListener('click', function () {
+            const qrCodeReader = new Html5Qrcode("qr-reader");
+            qrCodeReader.start({ facingMode: "environment" }, {
+                fps: 10,
+                qrbox: 250
+            }, qrCodeMessage => {
+                document.getElementById('qrBarcodeData').value = qrCodeMessage;
+                qrCodeReader.stop();
+            }, errorMessage => {
+                console.error('QR/Barcode scan error:', errorMessage);
+            }).catch(err => {
+                console.error('Error starting QR/Barcode scanner:', err);
+            });
+        });
     </script>
 </body>
 
