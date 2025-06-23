@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f7f9fc;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        border-bottom: 2px solid #ccc;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+      }
+      header img {
+        width: 80px;
+        height: 80px;
+        margin-right: 15px;
+      }
+      header h1 {
+        font-size: 20px;
+        color: #2c3e50;
+        margin: 0;
+      }
+      #fileList img {
+        width: 100px;
+        margin: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      #fileList {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      .spinner {
+        display: none;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 10px auto;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .readonly {
+        background-color: #eee;
+        border: 1px solid #ccc;
+        padding: 8px;
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Emblem_of_Telangana.svg/1200px-Emblem_of_Telangana.svg.png" alt="Telangana Logo">
+      <h1>Government of Telangana<br>Food Safety Department</h1>
+      <header style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px;">
+  <!-- Telangana Logo -->
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Emblem_of_Telangana.svg/1200px-Emblem_of_Telangana.svg.png" alt="Telangana Logo" style="height: 80px;">
+
+  <!-- Title -->
+  <div style="flex-grow: 1; text-align: center;">
+    <h1 style="margin: 0; font-size: 20px; color: #2c3e50;">Government of Telangana<br>Food Safety Department</h1>
+  </div>
+
+  <!-- FSSAI Logo -->
+  <img src="FSSAI_LOGO_URL" alt="FSSAI Logo" style="height: 60px;">
+</header>
+
+    </header>
+
+    <h2>📋 Establishment Upload Form</h2>
+    <form id="fboForm">
+      <label>🏢 Establishment Name:</label><br>
+      <input type="text" name="establishmentName" required><br><br>
+
+      <label>🏠 Address:</label><br>
+      <textarea name="address" rows="3" required></textarea><br><br>
+
+      <label>👤 FBO Name:</label><br>
+      <input type="text" name="fboName" required><br><br>
+
+      <label>📞 Contact Number:</label><br>
+      <input type="tel" name="contactNumber" required><br><br>
+
+      <label>🧪 Sample Details:</label><br>
+      <textarea name="sampleDetails" rows="3" required></textarea><br><br>
+
+      <label>📸 Photos:</label><br>
+      <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" />
+      <button type="button" id="addPhotoBtn">➕ Add Photo</button>
+      <button type="button" id="clearBtn">🧹 Clear All</button><br><br>
+      <div id="fileList"></div><br>
+
+      <label>🌐 Latitude:</label><br>
+      <input type="text" id="latitude" class="readonly" readonly><br><br>
+
+      <label>🌐 Longitude:</label><br>
+      <input type="text" id="longitude" class="readonly" readonly><br><br>
+
+      <label>📍 Google Map Link:</label><br>
+      <input type="text" id="mapLink" class="readonly" readonly><br><br>
+
+      <button type="submit">📤 Submit</button>
+      <div id="spinner" class="spinner"></div>
+    </form>
+
+    <script>
+      let userLatitude = '';
+      let userLongitude = '';
+      let photoFiles = [];
+
+      document.addEventListener('DOMContentLoaded', () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(position => {
+            userLatitude = position.coords.latitude;
+            userLongitude = position.coords.longitude;
+            document.getElementById('latitude').value = userLatitude;
+            document.getElementById('longitude').value = userLongitude;
+            document.getElementById('mapLink').value = `https://maps.google.com?q=${userLatitude},${userLongitude}`;
+          }, () => {
+            alert('Location access denied.');
+          }, { enableHighAccuracy: true });
+        }
+
+        document.getElementById('addPhotoBtn').addEventListener('click', () => {
+          document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', handleFileAdd);
+        document.getElementById('clearBtn').addEventListener('click', clearFiles);
+        document.getElementById('fboForm').addEventListener('submit', handleSubmit);
+      });
+
+      function handleFileAdd() {
+        const files = Array.from(document.getElementById('fileInput').files);
+        photoFiles = photoFiles.concat(files);
+        updatePreview();
+        document.getElementById('fileInput').value = '';
+      }
+
+      function updatePreview() {
+        const list = document.getElementById('fileList');
+        list.innerHTML = '';
+        photoFiles.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = e => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            list.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function clearFiles() {
+        photoFiles = [];
+        updatePreview();
+      }
+
+      function handleSubmit(e) {
+        e.preventDefault();
+        if (photoFiles.length === 0) {
+          alert("Please add at least one photo.");
+          return;
+        }
+
+        document.getElementById('spinner').style.display = 'block';
+
+        Promise.all(photoFiles.map(file => new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = e => resolve({
+            filename: file.name,
+            contentType: file.type,
+            bytes: e.target.result.split(',')[1]
+          });
+          reader.readAsDataURL(file);
+        }))).then(filesArr => {
+          const form = document.getElementById('fboForm');
+          const data = {
+            establishmentName: form.establishmentName.value,
+            address: form.address.value,
+            fboName: form.fboName.value,
+            contactNumber: form.contactNumber.value,
+            sampleDetails: form.sampleDetails.value,
+            latitude: document.getElementById("latitude").value,
+            longitude: document.getElementById("longitude").value,
+            mapLink: document.getElementById("mapLink").value,
+            files: filesArr
+          };
+
+          google.script.run.withSuccessHandler(function (msg) {
+            document.getElementById('spinner').style.display = 'none';
+            alert(msg);
+            form.reset();
+            clearFiles();
+          }).uploadFiles(data);
+        });
+      }
+    </script>
+  </body>
+</html>
