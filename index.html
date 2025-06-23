@@ -203,26 +203,29 @@
                             imagePreview.style.height = 'auto'; // Maintain aspect ratio
                             imagePreview.style.display = 'block';
 
-                            const textOverlay = document.createElement('textarea');
-                            textOverlay.style.position = 'absolute';
-                            textOverlay.style.top = '10%';
-                            textOverlay.style.left = '10%';
-                            textOverlay.style.width = '80%';
-                            textOverlay.style.height = '30%';
-                            textOverlay.style.background = 'rgba(255, 255, 255, 0.8)';
-                            textOverlay.style.border = '1px solid #ccc';
-                            textOverlay.style.resize = 'none';
-                            textOverlay.style.padding = '5px';
-                            textOverlay.style.fontSize = '14px'; // Adjust font size for better readability
-
                             Tesseract.recognize(
                                 e.target.result,
-                                'eng', // Default to English; can be extended to auto-detect languages
+                                'eng',
                                 {
                                     logger: info => console.log(info)
                                 }
-                            ).then(({ data: { text } }) => {
-                                textOverlay.value = text.trim();
+                            ).then(({ data: { blocks } }) => {
+                                blocks.forEach(block => {
+                                    const { bbox, text } = block;
+                                    const textOverlay = document.createElement('div');
+                                    textOverlay.innerText = text.trim();
+                                    textOverlay.style.position = 'absolute';
+                                    textOverlay.style.left = `${bbox.x0}px`;
+                                    textOverlay.style.top = `${bbox.y0}px`;
+                                    textOverlay.style.width = `${bbox.x1 - bbox.x0}px`;
+                                    textOverlay.style.height = `${bbox.y1 - bbox.y0}px`;
+                                    textOverlay.style.background = 'rgba(255, 255, 255, 0.8)';
+                                    textOverlay.style.border = '1px solid #ccc';
+                                    textOverlay.style.fontSize = '14px';
+                                    textOverlay.style.padding = '2px';
+                                    textOverlay.style.boxSizing = 'border-box';
+                                    imageContainer.appendChild(textOverlay);
+                                });
                             }).catch(error => {
                                 console.error('OCR Error:', error);
                                 alert('Failed to recognize text. Please try again.');
@@ -246,7 +249,6 @@
                             });
 
                             imageContainer.appendChild(imagePreview);
-                            imageContainer.appendChild(textOverlay);
                             imageContainer.appendChild(confirmButton);
                             imageContainer.appendChild(closeButton);
                             inputField.parentNode.insertBefore(imageContainer, inputField.nextSibling);
