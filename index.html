@@ -210,15 +210,22 @@
                                     logger: info => console.log(info)
                                 }
                             ).then(({ data: { blocks } }) => {
+                                const imageWidth = imagePreview.naturalWidth;
+                                const imageHeight = imagePreview.naturalHeight;
+                                const displayedWidth = imagePreview.clientWidth;
+                                const displayedHeight = imagePreview.clientHeight;
+                                const scaleX = displayedWidth / imageWidth;
+                                const scaleY = displayedHeight / imageHeight;
+
                                 blocks.forEach(block => {
                                     const { bbox, text } = block;
                                     const textOverlay = document.createElement('div');
                                     textOverlay.innerText = text.trim();
                                     textOverlay.style.position = 'absolute';
-                                    textOverlay.style.left = `${bbox.x0}px`;
-                                    textOverlay.style.top = `${bbox.y0}px`;
-                                    textOverlay.style.width = `${bbox.x1 - bbox.x0}px`;
-                                    textOverlay.style.height = `${bbox.y1 - bbox.y0}px`;
+                                    textOverlay.style.left = `${bbox.x0 * scaleX}px`;
+                                    textOverlay.style.top = `${bbox.y0 * scaleY}px`;
+                                    textOverlay.style.width = `${(bbox.x1 - bbox.x0) * scaleX}px`;
+                                    textOverlay.style.height = `${(bbox.y1 - bbox.y0) * scaleY}px`;
                                     textOverlay.style.background = 'rgba(255, 255, 255, 0.8)';
                                     textOverlay.style.border = '1px solid #ccc';
                                     textOverlay.style.fontSize = '14px';
