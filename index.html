@@ -209,7 +209,7 @@
                                 {
                                     logger: info => console.log(info)
                                 }
-                            ).then(({ data: { blocks } }) => {
+                            ).then(({ data: { words } }) => {
                                 const imageWidth = imagePreview.naturalWidth;
                                 const imageHeight = imagePreview.naturalHeight;
                                 const displayedWidth = imagePreview.clientWidth;
@@ -217,8 +217,8 @@
                                 const scaleX = displayedWidth / imageWidth;
                                 const scaleY = displayedHeight / imageHeight;
 
-                                blocks.forEach(block => {
-                                    const { bbox, text } = block;
+                                words.forEach(word => {
+                                    const { bbox, text } = word;
                                     const textOverlay = document.createElement('div');
                                     textOverlay.innerText = text.trim();
                                     textOverlay.style.position = 'absolute';
