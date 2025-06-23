@@ -190,6 +190,11 @@
                     if (file) {
                         const reader = new FileReader();
                         reader.onload = function (e) {
+                            const imagePreview = document.createElement('img');
+                            imagePreview.src = e.target.result;
+                            imagePreview.style.width = '100%';
+                            imagePreview.style.marginTop = '10px';
+
                             Tesseract.recognize(
                                 e.target.result,
                                 'eng', // Default to English; can be extended to auto-detect languages
@@ -197,28 +202,50 @@
                                     logger: info => console.log(info)
                                 }
                             ).then(({ data: { text } }) => {
-                                if (text.trim()) {
-                                    const tempInput = document.createElement('textarea');
-                                    tempInput.value = text.trim();
-                                    tempInput.style.width = '100%';
-                                    tempInput.style.height = '100px';
-                                    tempInput.style.marginTop = '10px';
+                                const tempInput = document.createElement('textarea');
+                                tempInput.value = text.trim();
+                                tempInput.style.width = '100%';
+                                tempInput.style.height = '100px';
+                                tempInput.style.marginTop = '10px';
 
-                                    const confirmButton = document.createElement('button');
-                                    confirmButton.innerText = 'OK';
-                                    confirmButton.type = 'button';
-                                    confirmButton.style.marginLeft = '10px';
-                                    confirmButton.addEventListener('click', function () {
-                                        inputField.value = tempInput.value;
-                                        tempInput.remove();
-                                        confirmButton.remove();
-                                    });
+                                const confirmButton = document.createElement('button');
+                                confirmButton.innerText = 'OK';
+                                confirmButton.type = 'button';
+                                confirmButton.style.marginLeft = '10px';
+                                confirmButton.addEventListener('click', function () {
+                                    inputField.value = tempInput.value;
+                                    tempInput.remove();
+                                    confirmButton.remove();
+                                    clearButton.remove();
+                                    closeButton.remove();
+                                    imagePreview.remove();
+                                });
 
-                                    inputField.parentNode.insertBefore(tempInput, inputField.nextSibling);
-                                    inputField.parentNode.insertBefore(confirmButton, tempInput.nextSibling);
-                                } else {
-                                    alert('No text detected in the image. Please try again with a clearer image.');
-                                }
+                                const clearButton = document.createElement('button');
+                                clearButton.innerText = 'Clear';
+                                clearButton.type = 'button';
+                                clearButton.style.marginLeft = '10px';
+                                clearButton.addEventListener('click', function () {
+                                    tempInput.value = '';
+                                });
+
+                                const closeButton = document.createElement('button');
+                                closeButton.innerText = 'Close';
+                                closeButton.type = 'button';
+                                closeButton.style.marginLeft = '10px';
+                                closeButton.addEventListener('click', function () {
+                                    tempInput.remove();
+                                    confirmButton.remove();
+                                    clearButton.remove();
+                                    closeButton.remove();
+                                    imagePreview.remove();
+                                });
+
+                                inputField.parentNode.insertBefore(imagePreview, inputField.nextSibling);
+                                inputField.parentNode.insertBefore(tempInput, imagePreview.nextSibling);
+                                inputField.parentNode.insertBefore(confirmButton, tempInput.nextSibling);
+                                inputField.parentNode.insertBefore(clearButton, confirmButton.nextSibling);
+                                inputField.parentNode.insertBefore(closeButton, clearButton.nextSibling);
                             }).catch(error => {
                                 console.error('OCR Error:', error);
                                 alert('Failed to recognize text. Please try again.');
