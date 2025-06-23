@@ -192,30 +192,41 @@
                         reader.onload = function (e) {
                             Tesseract.recognize(
                                 e.target.result,
-                                'script', // Auto-detect language
+                                'eng', // Default to English; can be extended to auto-detect languages
                                 {
                                     logger: info => console.log(info)
                                 }
                             ).then(({ data: { text } }) => {
-                                const tempInput = document.createElement('textarea');
-                                tempInput.value = text.trim();
-                                tempInput.style.width = '100%';
-                                tempInput.style.height = '100px';
-                                const confirmButton = document.createElement('button');
-                                confirmButton.innerText = 'OK';
-                                confirmButton.type = 'button';
-                                confirmButton.addEventListener('click', function () {
-                                    inputField.value = tempInput.value;
-                                    tempInput.remove();
-                                    confirmButton.remove();
-                                });
-                                inputField.parentNode.insertBefore(tempInput, inputField.nextSibling);
-                                inputField.parentNode.insertBefore(confirmButton, tempInput.nextSibling);
+                                if (text.trim()) {
+                                    const tempInput = document.createElement('textarea');
+                                    tempInput.value = text.trim();
+                                    tempInput.style.width = '100%';
+                                    tempInput.style.height = '100px';
+                                    tempInput.style.marginTop = '10px';
+
+                                    const confirmButton = document.createElement('button');
+                                    confirmButton.innerText = 'OK';
+                                    confirmButton.type = 'button';
+                                    confirmButton.style.marginLeft = '10px';
+                                    confirmButton.addEventListener('click', function () {
+                                        inputField.value = tempInput.value;
+                                        tempInput.remove();
+                                        confirmButton.remove();
+                                    });
+
+                                    inputField.parentNode.insertBefore(tempInput, inputField.nextSibling);
+                                    inputField.parentNode.insertBefore(confirmButton, tempInput.nextSibling);
+                                } else {
+                                    alert('No text detected in the image. Please try again with a clearer image.');
+                                }
                             }).catch(error => {
                                 console.error('OCR Error:', error);
+                                alert('Failed to recognize text. Please try again.');
                             });
                         };
                         reader.readAsDataURL(file);
+                    } else {
+                        alert('No file selected. Please try again.');
                     }
                 });
                 fileInput.click();
