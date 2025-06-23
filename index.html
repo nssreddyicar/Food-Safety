@@ -194,10 +194,13 @@
                             imageContainer.style.position = 'relative';
                             imageContainer.style.display = 'inline-block';
                             imageContainer.style.marginTop = '10px';
+                            imageContainer.style.width = '100%';
+                            imageContainer.style.maxWidth = '500px'; // Limit the maximum width for better scaling
 
                             const imagePreview = document.createElement('img');
                             imagePreview.src = e.target.result;
                             imagePreview.style.width = '100%';
+                            imagePreview.style.height = 'auto'; // Maintain aspect ratio
                             imagePreview.style.display = 'block';
 
                             const textOverlay = document.createElement('textarea');
@@ -210,6 +213,7 @@
                             textOverlay.style.border = '1px solid #ccc';
                             textOverlay.style.resize = 'none';
                             textOverlay.style.padding = '5px';
+                            textOverlay.style.fontSize = '14px'; // Adjust font size for better readability
 
                             Tesseract.recognize(
                                 e.target.result,
@@ -265,13 +269,22 @@
         addCameraIcon('sampleDetails');
 
         document.getElementById('scanQrBarcodeBtn').addEventListener('click', function () {
+            const qrCodeReaderContainer = document.createElement('div');
+            qrCodeReaderContainer.id = 'qr-reader';
+            qrCodeReaderContainer.style.marginTop = '10px';
+            document.body.appendChild(qrCodeReaderContainer);
+
             const qrCodeReader = new Html5Qrcode("qr-reader");
             qrCodeReader.start({ facingMode: "environment" }, {
                 fps: 10,
                 qrbox: 250
             }, qrCodeMessage => {
                 document.getElementById('qrBarcodeData').value = qrCodeMessage;
-                qrCodeReader.stop();
+                qrCodeReader.stop().then(() => {
+                    qrCodeReaderContainer.remove();
+                }).catch(err => {
+                    console.error('Error stopping QR/Barcode scanner:', err);
+                });
             }, errorMessage => {
                 console.error('QR/Barcode scan error:', errorMessage);
             }).catch(err => {
