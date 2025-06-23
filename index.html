@@ -190,10 +190,26 @@
                     if (file) {
                         const reader = new FileReader();
                         reader.onload = function (e) {
+                            const imageContainer = document.createElement('div');
+                            imageContainer.style.position = 'relative';
+                            imageContainer.style.display = 'inline-block';
+                            imageContainer.style.marginTop = '10px';
+
                             const imagePreview = document.createElement('img');
                             imagePreview.src = e.target.result;
                             imagePreview.style.width = '100%';
-                            imagePreview.style.marginTop = '10px';
+                            imagePreview.style.display = 'block';
+
+                            const textOverlay = document.createElement('textarea');
+                            textOverlay.style.position = 'absolute';
+                            textOverlay.style.top = '10%';
+                            textOverlay.style.left = '10%';
+                            textOverlay.style.width = '80%';
+                            textOverlay.style.height = '30%';
+                            textOverlay.style.background = 'rgba(255, 255, 255, 0.8)';
+                            textOverlay.style.border = '1px solid #ccc';
+                            textOverlay.style.resize = 'none';
+                            textOverlay.style.padding = '5px';
 
                             Tesseract.recognize(
                                 e.target.result,
@@ -202,54 +218,34 @@
                                     logger: info => console.log(info)
                                 }
                             ).then(({ data: { text } }) => {
-                                const tempInput = document.createElement('textarea');
-                                tempInput.value = text.trim();
-                                tempInput.style.width = '100%';
-                                tempInput.style.height = '100px';
-                                tempInput.style.marginTop = '10px';
-
-                                const confirmButton = document.createElement('button');
-                                confirmButton.innerText = 'OK';
-                                confirmButton.type = 'button';
-                                confirmButton.style.marginLeft = '10px';
-                                confirmButton.addEventListener('click', function () {
-                                    inputField.value = tempInput.value;
-                                    tempInput.remove();
-                                    confirmButton.remove();
-                                    clearButton.remove();
-                                    closeButton.remove();
-                                    imagePreview.remove();
-                                });
-
-                                const clearButton = document.createElement('button');
-                                clearButton.innerText = 'Clear';
-                                clearButton.type = 'button';
-                                clearButton.style.marginLeft = '10px';
-                                clearButton.addEventListener('click', function () {
-                                    tempInput.value = '';
-                                });
-
-                                const closeButton = document.createElement('button');
-                                closeButton.innerText = 'Close';
-                                closeButton.type = 'button';
-                                closeButton.style.marginLeft = '10px';
-                                closeButton.addEventListener('click', function () {
-                                    tempInput.remove();
-                                    confirmButton.remove();
-                                    clearButton.remove();
-                                    closeButton.remove();
-                                    imagePreview.remove();
-                                });
-
-                                inputField.parentNode.insertBefore(imagePreview, inputField.nextSibling);
-                                inputField.parentNode.insertBefore(tempInput, imagePreview.nextSibling);
-                                inputField.parentNode.insertBefore(confirmButton, tempInput.nextSibling);
-                                inputField.parentNode.insertBefore(clearButton, confirmButton.nextSibling);
-                                inputField.parentNode.insertBefore(closeButton, clearButton.nextSibling);
+                                textOverlay.value = text.trim();
                             }).catch(error => {
                                 console.error('OCR Error:', error);
                                 alert('Failed to recognize text. Please try again.');
                             });
+
+                            const confirmButton = document.createElement('button');
+                            confirmButton.innerText = 'OK';
+                            confirmButton.type = 'button';
+                            confirmButton.style.marginTop = '10px';
+                            confirmButton.addEventListener('click', function () {
+                                inputField.value = textOverlay.value;
+                                imageContainer.remove();
+                            });
+
+                            const closeButton = document.createElement('button');
+                            closeButton.innerText = 'Close';
+                            closeButton.type = 'button';
+                            closeButton.style.marginLeft = '10px';
+                            closeButton.addEventListener('click', function () {
+                                imageContainer.remove();
+                            });
+
+                            imageContainer.appendChild(imagePreview);
+                            imageContainer.appendChild(textOverlay);
+                            imageContainer.appendChild(confirmButton);
+                            imageContainer.appendChild(closeButton);
+                            inputField.parentNode.insertBefore(imageContainer, inputField.nextSibling);
                         };
                         reader.readAsDataURL(file);
                     } else {
