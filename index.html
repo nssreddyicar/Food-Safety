@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f7f9fc;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 2px solid #ccc;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+      header img {
+        height: 80px;
+      }
+      header h1 {
+        font-size: 20px;
+        color: #2c3e50;
+        margin: 0;
+        text-align: center;
+      }
+      #fileList img {
+        width: 100px;
+        margin: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      #fileList {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      .spinner {
+        display: none;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 10px auto;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .readonly {
+        background-color: #eee;
+        border: 1px solid #ccc;
+        padding: 8px;
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <header>
+      <img src="https://raw.githubusercontent.com/nssreddyicar/Food-Safety/main/emblem_tg.png" alt="Telangana Logo">
+      <div style="flex-grow: 1;">
+        <h1>Government of Telangana<br>Food Safety Department</h1>
+      </div>
+      <img src="https://raw.githubusercontent.com/nssreddyicar/Food-Safety/main/logo-tgfs.jpg" alt="Telangana Food Safety Logo" style="height: 70px;">
+    </header>
+
+    <h2>📋 Establishment Upload Form</h2>
+    <form id="fboForm">
+      <label>🏢 Establishment Name:</label><br>
+      <input type="text" name="establishmentName" required><br><br>
+
+      <label>🏠 Address:</label><br>
+      <textarea name="address" rows="3" required></textarea><br><br>
+
+      <label>👤 FBO Name:</label><br>
+      <input type="text" name="fboName" required><br><br>
+
+      <label>📞 Contact Number:</label><br>
+      <input type="tel" name="contactNumber" required><br><br>
+
+      <label>🧪 Sample Details:</label><br>
+      <textarea name="sampleDetails" rows="3" required></textarea><br><br>
+
+      <label>📸 Photos:</label><br>
+      <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" />
+      <button type="button" id="addPhotoBtn">➕ Add Photo</button>
+      <button type="button" id="clearBtn">🧹 Clear All</button><br><br>
+      <div id="fileList"></div><br>
+
+      <label>🌐 Latitude:</label><br>
+      <input type="text" id="latitude" class="readonly" readonly><br><br>
+
+      <label>🌐 Longitude:</label><br>
+      <input type="text" id="longitude" class="readonly" readonly><br><br>
+
+      <label>📍 Google Map Link:</label><br>
+      <input type="text" id="mapLink" class="readonly" readonly><br><br>
+
+      <button type="submit">
