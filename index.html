@@ -69,7 +69,13 @@
             padding: 8px;
             width: 100%;
         }
+
+        .camera-icon {
+            margin-left: 10px;
+            cursor: pointer;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
 </head>
 
 <body>
@@ -86,19 +92,21 @@
     <h2>📋 Establishment Upload Form</h2>
     <form id="fboForm">
         <label>🏢 Establishment Name:</label><br>
-        <input type="text" name="establishmentName" required><br><br>
+        <input type="text" name="establishmentName" id="establishmentName" required><span
+            class="camera-icon">📷</span><br><br>
 
         <label>🏠 Address:</label><br>
-        <textarea name="address" rows="3" required></textarea><br><br>
+        <textarea name="address" id="address" rows="3" required></textarea><span class="camera-icon">📷</span><br><br>
 
         <label>👤 FBO Name:</label><br>
-        <input type="text" name="fboName" required><br><br>
+        <input type="text" name="fboName" id="fboName" required><span class="camera-icon">📷</span><br><br>
 
         <label>📞 Contact Number:</label><br>
-        <input type="tel" name="contactNumber" required><br><br>
+        <input type="tel" name="contactNumber" id="contactNumber" required><span class="camera-icon">📷</span><br><br>
 
         <label>🧪 Sample Details:</label><br>
-        <textarea name="sampleDetails" rows="3" required></textarea><br><br>
+        <textarea name="sampleDetails" id="sampleDetails" rows="3" required></textarea><span
+            class="camera-icon">📷</span><br><br>
 
         <label>📸 Photos:</label><br>
         <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" />
@@ -157,6 +165,50 @@
         } else {
             console.error('Geolocation is not supported by this browser.');
         }
+
+        function addCameraIcon(inputId) {
+            const inputField = document.getElementById(inputId);
+            const cameraIcon = document.createElement('button');
+            cameraIcon.innerHTML = '📷';
+            cameraIcon.type = 'button';
+            cameraIcon.className = 'camera-icon';
+            cameraIcon.addEventListener('click', function () {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.capture = 'environment';
+                fileInput.style.display = 'none';
+                fileInput.addEventListener('change', function (event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            Tesseract.recognize(
+                                e.target.result,
+                                'eng',
+                                {
+                                    logger: info => console.log(info)
+                                }
+                            ).then(({ data: { text } }) => {
+                                inputField.value = text.trim();
+                            }).catch(error => {
+                                console.error('OCR Error:', error);
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+                fileInput.click();
+            });
+            inputField.parentNode.insertBefore(cameraIcon, inputField.nextSibling);
+        }
+
+        // Add camera icons to specific input fields
+        addCameraIcon('establishmentName');
+        addCameraIcon('address');
+        addCameraIcon('fboName');
+        addCameraIcon('contactNumber');
+        addCameraIcon('sampleDetails');
     </script>
 </body>
 
