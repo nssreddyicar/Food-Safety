@@ -113,7 +113,7 @@
         <textarea name="sampleDetails" id="sampleDetails" rows="3" required></textarea><br><br>
 
         <label>📸 Photos:</label><br>
-        <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" />
+        <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" multiple />
         <button type="button" id="addPhotoBtn">➕ Add Photo</button>
         <button type="button" id="clearBtn">🧹 Clear All</button><br><br>
         <div id="fileList"></div><br>
@@ -143,7 +143,6 @@
 
         document.getElementById('fileInput').addEventListener('change', function (event) {
             const fileList = document.getElementById('fileList');
-            fileList.innerHTML = ''; // Clear existing photos
             Array.from(event.target.files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function (e) {
@@ -193,7 +192,7 @@
                         reader.onload = function (e) {
                             Tesseract.recognize(
                                 e.target.result,
-                                'eng+hin+tel+tam+kan+mal+ben+guj+ori+pan+mar', // English + major Indian languages
+                                'script', // Auto-detect language
                                 {
                                     logger: info => console.log(info)
                                 }
