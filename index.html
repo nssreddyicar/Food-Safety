@@ -197,7 +197,20 @@
                                     logger: info => console.log(info)
                                 }
                             ).then(({ data: { text } }) => {
-                                inputField.value = text.trim();
+                                const tempInput = document.createElement('textarea');
+                                tempInput.value = text.trim();
+                                tempInput.style.width = '100%';
+                                tempInput.style.height = '100px';
+                                const confirmButton = document.createElement('button');
+                                confirmButton.innerText = 'OK';
+                                confirmButton.type = 'button';
+                                confirmButton.addEventListener('click', function () {
+                                    inputField.value = tempInput.value;
+                                    tempInput.remove();
+                                    confirmButton.remove();
+                                });
+                                inputField.parentNode.insertBefore(tempInput, inputField.nextSibling);
+                                inputField.parentNode.insertBefore(confirmButton, tempInput.nextSibling);
                             }).catch(error => {
                                 console.error('OCR Error:', error);
                             });
