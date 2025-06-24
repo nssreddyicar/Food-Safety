@@ -1,0 +1,10 @@
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+*.zip
+node_modules/
+.git/
+.vscode/
+.DS_Store

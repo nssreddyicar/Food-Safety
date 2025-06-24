@@ -185,57 +185,42 @@
                 fileInput.accept = 'image/*';
                 fileInput.capture = 'environment';
                 fileInput.style.display = 'none';
-                fileInput.addEventListener('change', function (event) {
+                fileInput.addEventListener('change', async function (event) {
                     const file = event.target.files[0];
                     if (file) {
                         const reader = new FileReader();
-                        reader.onload = function (e) {
+                        reader.onload = async function (e) {
                             const imageContainer = document.createElement('div');
                             imageContainer.style.position = 'relative';
                             imageContainer.style.display = 'inline-block';
                             imageContainer.style.marginTop = '10px';
                             imageContainer.style.width = '100%';
-                            imageContainer.style.maxWidth = '500px'; // Limit the maximum width for better scaling
+                            imageContainer.style.maxWidth = '500px';
 
                             const imagePreview = document.createElement('img');
                             imagePreview.src = e.target.result;
                             imagePreview.style.width = '100%';
-                            imagePreview.style.height = 'auto'; // Maintain aspect ratio
+                            imagePreview.style.height = 'auto';
                             imagePreview.style.display = 'block';
 
-                            Tesseract.recognize(
-                                e.target.result,
-                                'eng',
-                                {
-                                    logger: info => console.log(info)
-                                }
-                            ).then(({ data: { words } }) => {
-                                const imageWidth = imagePreview.naturalWidth;
-                                const imageHeight = imagePreview.naturalHeight;
-                                const displayedWidth = imagePreview.clientWidth;
-                                const displayedHeight = imagePreview.clientHeight;
-                                const scaleX = displayedWidth / imageWidth;
-                                const scaleY = displayedHeight / imageHeight;
+                            const textAnnotations = await performGoogleCloudOCR(e.target.result);
+                            textAnnotations.forEach(annotation => {
+                                const { boundingPoly, description } = annotation;
+                                const vertices = boundingPoly.vertices;
 
-                                words.forEach(word => {
-                                    const { bbox, text } = word;
-                                    const textOverlay = document.createElement('div');
-                                    textOverlay.innerText = text.trim();
-                                    textOverlay.style.position = 'absolute';
-                                    textOverlay.style.left = `${bbox.x0 * scaleX}px`;
-                                    textOverlay.style.top = `${bbox.y0 * scaleY}px`;
-                                    textOverlay.style.width = `${(bbox.x1 - bbox.x0) * scaleX}px`;
-                                    textOverlay.style.height = `${(bbox.y1 - bbox.y0) * scaleY}px`;
-                                    textOverlay.style.background = 'rgba(255, 255, 255, 0.8)';
-                                    textOverlay.style.border = '1px solid #ccc';
-                                    textOverlay.style.fontSize = '14px';
-                                    textOverlay.style.padding = '2px';
-                                    textOverlay.style.boxSizing = 'border-box';
-                                    imageContainer.appendChild(textOverlay);
-                                });
-                            }).catch(error => {
-                                console.error('OCR Error:', error);
-                                alert('Failed to recognize text. Please try again.');
+                                const textOverlay = document.createElement('div');
+                                textOverlay.innerText = description.trim();
+                                textOverlay.style.position = 'absolute';
+                                textOverlay.style.left = `${vertices[0].x}px`;
+                                textOverlay.style.top = `${vertices[0].y}px`;
+                                textOverlay.style.width = `${vertices[1].x - vertices[0].x}px`;
+                                textOverlay.style.height = `${vertices[2].y - vertices[0].y}px`;
+                                textOverlay.style.background = 'rgba(255, 255, 255, 0.8)';
+                                textOverlay.style.border = '1px solid #ccc';
+                                textOverlay.style.fontSize = '14px';
+                                textOverlay.style.padding = '2px';
+                                textOverlay.style.boxSizing = 'border-box';
+                                imageContainer.appendChild(textOverlay);
                             });
 
                             const confirmButton = document.createElement('button');
@@ -243,7 +228,7 @@
                             confirmButton.type = 'button';
                             confirmButton.style.marginTop = '10px';
                             confirmButton.addEventListener('click', function () {
-                                inputField.value = textOverlay.value;
+                                inputField.value = textAnnotations.map(a => a.description).join(' ');
                                 imageContainer.remove();
                             });
 
@@ -300,6 +285,32 @@
                 console.error('Error starting QR/Barcode scanner:', err);
             });
         });
+
+        // Add Google Cloud Vision API integration
+        async function performGoogleCloudOCR(imageData) {
+            const url = 'https://food-safety-cloud-run-service-url/vision-api'; // Updated with actual Cloud Run URL
+
+            const requestBody = {
+                image: imageData.split(',')[1] // Remove data URL prefix
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const result = await response.json();
+                return result.textAnnotations;
+            } catch (error) {
+                console.error('Google Cloud OCR Error:', error);
+                alert('Failed to recognize text using Google Cloud OCR. Please try again.');
+                return [];
+            }
+        }
     </script>
 </body>
 
